@@ -208,11 +208,14 @@ function mountSelectionScreen(root, nextPage) {
     if (nextPage === "1_nl_v.html") {
       transitionToInlineNlVoice(root, {
         backTarget: `${window.location.pathname.split("/").pop() || "1_sel_nl_v.html"}`,
-        delayMs: 0,
+        delayMs: 500,
+        autoplayMode: "immediate",
       });
       return;
     }
-    window.location.href = nextPage;
+    window.setTimeout(() => {
+      window.location.href = nextPage;
+    }, 500);
   });
 }
 
@@ -296,26 +299,24 @@ function mountNlVoice(root) {
     <svg class="wave-mark" viewBox="0 0 140 140" aria-hidden="true">
       <path d="M8 74h29l18-51 25 93 20-42h32" />
     </svg>
-    <audio id="nl-voice-audio" src="./material/1_NL_V.mp3" preload="auto" autoplay playsinline></audio>
+    <audio id="nl-voice-audio" src="./material/1_NL_V.mp3" preload="auto" playsinline></audio>
   `;
   content.appendChild(stage);
 
   const audio = stage.querySelector("#nl-voice-audio");
-  let played = false;
+  const delay = autoplayMode === "immediate" ? 0 : 500;
   const playAudio = () => {
-    if (played) {
-      return;
-    }
-    played = true;
-    const delay = autoplayMode === "immediate" ? 0 : 500;
     window.setTimeout(() => {
       audio.play().catch(() => {});
     }, delay);
   };
-  audio.addEventListener("canplaythrough", playAudio, { once: true });
-  audio.addEventListener("loadeddata", playAudio, { once: true });
-  audio.load();
-  playAudio();
+
+  if (audio.readyState >= 2) {
+    playAudio();
+  } else {
+    audio.addEventListener("loadeddata", playAudio, { once: true });
+    audio.load();
+  }
 }
 
 function renderNlVoiceContent(root, backTarget) {
@@ -333,11 +334,13 @@ function renderNlVoiceContent(root, backTarget) {
 }
 
 function transitionToInlineNlVoice(root, options = {}) {
-  const { backTarget = "index.html", delayMs = 0 } = options;
+  const { backTarget = "index.html", delayMs = 0, autoplayMode = "immediate" } = options;
   const primeAudio = new Audio("./material/1_NL_V.mp3");
   primeAudio.preload = "auto";
+  primeAudio.muted = true;
 
   const startTransition = () => {
+    sessionStorage.setItem("prototypeVoiceAutoplay", autoplayMode);
     window.setTimeout(() => {
       renderNlVoiceContent(root, backTarget);
     }, delayMs);
@@ -387,6 +390,7 @@ function mountVoiceFlow(root) {
       transitionToInlineNlVoice(root, {
         backTarget: backSource,
         delayMs: 500,
+        autoplayMode: "immediate",
       });
       return;
     }
