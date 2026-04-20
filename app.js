@@ -488,24 +488,56 @@ function mountSoundCheck(root) {
       <span class="sound-toggle-track"></span>
       <span class="sound-toggle-thumb"></span>
     </label>
-    <audio id="sound-check-audio" src="./material/sound check.mp3" preload="auto" loop playsinline></audio>
+    <audio id="sound-check-audio" src="./material/sound check.mp3" preload="auto" playsinline></audio>
   `;
   content.appendChild(wrap);
 
   const toggle = wrap.querySelector("[data-sound-toggle]");
   const audio = wrap.querySelector("#sound-check-audio");
+  let restartTimer = null;
 
-  toggle.addEventListener("change", () => {
-    if (toggle.checked) {
-      audio.currentTime = 0;
-      audio.play().catch(() => {
-        toggle.checked = false;
-      });
+  const clearRestartTimer = () => {
+    if (restartTimer) {
+      window.clearTimeout(restartTimer);
+      restartTimer = null;
+    }
+  };
+
+  const stopPlayback = () => {
+    clearRestartTimer();
+    audio.pause();
+    audio.currentTime = 0;
+  };
+
+  const startPlayback = () => {
+    clearRestartTimer();
+    audio.currentTime = 0;
+    audio.play().catch(() => {
+      toggle.checked = false;
+      stopPlayback();
+    });
+  };
+
+  audio.addEventListener("ended", () => {
+    if (!toggle.checked) {
       return;
     }
 
-    audio.pause();
-    audio.currentTime = 0;
+    restartTimer = window.setTimeout(() => {
+      if (!toggle.checked) {
+        return;
+      }
+      startPlayback();
+    }, 1000);
+  });
+
+  toggle.addEventListener("change", () => {
+    if (toggle.checked) {
+      startPlayback();
+      return;
+    }
+
+    stopPlayback();
   });
 }
 
