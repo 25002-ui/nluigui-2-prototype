@@ -477,6 +477,38 @@ function mountTextEntry(root) {
   }
 }
 
+function mountSoundCheck(root) {
+  const content = root.querySelector(".content");
+  const wrap = document.createElement("div");
+  wrap.className = "sound-check-panel";
+  wrap.innerHTML = `
+    <h2 class="sound-check-title">音声チェック</h2>
+    <label class="sound-toggle" aria-label="音声チェック切り替え">
+      <input class="sound-toggle-input" type="checkbox" data-sound-toggle>
+      <span class="sound-toggle-track"></span>
+      <span class="sound-toggle-thumb"></span>
+    </label>
+    <audio id="sound-check-audio" src="./material/sound check.mp3" preload="auto" loop playsinline></audio>
+  `;
+  content.appendChild(wrap);
+
+  const toggle = wrap.querySelector("[data-sound-toggle]");
+  const audio = wrap.querySelector("#sound-check-audio");
+
+  toggle.addEventListener("change", () => {
+    if (toggle.checked) {
+      audio.currentTime = 0;
+      audio.play().catch(() => {
+        toggle.checked = false;
+      });
+      return;
+    }
+
+    audio.pause();
+    audio.currentTime = 0;
+  });
+}
+
 function mountBottomNav(root, active) {
   const nav = document.createElement("nav");
   nav.className = "bottom-nav";
@@ -566,6 +598,9 @@ function mountPage() {
     case "text-entry":
       mountTextEntry(screen);
       syncViewportOffset();
+      break;
+    case "sound-check":
+      mountSoundCheck(screen);
       break;
     default:
       break;
