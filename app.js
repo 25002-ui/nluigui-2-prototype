@@ -24,7 +24,7 @@ const selectionGroups = [
       },
       {
         label: "麺類",
-        items: [],
+        items: ["うどん", "そば", "中華麺", "・・・"],
       },
     ],
   },
@@ -81,6 +81,33 @@ const salmonRecipes = [
     title: "鮭のみそマヨ\nちゃんちゃん焼き",
     time: "25分",
     desc: "フライパン１つで簡単に作れて、野菜がたくさん食べられる一品です。",
+  },
+];
+
+const practiceRecipes = [
+  {
+    image: "./material/r_hikiniku_1.jpg",
+    title: "温玉鶏そぼろ丼",
+    time: "10分",
+    desc: "甘辛く味つけしたそぼろに温玉をのせる料理で、温玉をくずしながら食べると全体がまろやかにまとまります。",
+  },
+  {
+    image: "./material/r_hikiniku_2.jpg",
+    title: "ボロネーゼ",
+    time: "15分",
+    desc: "フライパン1つで作れて、時間をおくほど味に深みが出て美味しくなります。",
+  },
+  {
+    image: "./material/r_hikiniku_3.jpg",
+    title: "ピリ辛麻婆豆腐",
+    time: "15分",
+    desc: "しっかりした味付けでごはんにのせればボリュームも出るので、がっつり食べたいときにおすすめです。",
+  },
+  {
+    image: "./material/r_hikiniku_4.jpg",
+    title: "シチュービーフで作る\n煮込みハンバーグ",
+    time: "20分",
+    desc: "ビーフシチュールウを使って手軽にコクのある味に仕上がり、洋風の主菜にぴったりです。",
   },
 ];
 
@@ -201,6 +228,9 @@ function mountGridResults(root, recipes, fallbackTags, forceFixedTags = false) {
   }
   if (recipes === salmonRecipes) {
     root.classList.add("grid-2-screen");
+  }
+  if (recipes === practiceRecipes) {
+    root.classList.add("grid-practice-screen");
   }
   const selections = JSON.parse(sessionStorage.getItem("prototypeSelections") || "[]");
   const tags = forceFixedTags ? fallbackTags : (selections.length > 0 ? selections.slice(0, 2) : fallbackTags);
@@ -390,6 +420,8 @@ function syncViewportOffset() {
 function mountTextEntry(root) {
   root.classList.add("has-composer");
   const content = root.querySelector(".content");
+  const routeTarget = root.dataset.routeTarget || "2_grkw_t.html";
+  const backSource = root.dataset.backSource || "2_t1.html";
   const spacer = document.createElement("div");
   spacer.className = "text-page-spacer";
   content.appendChild(spacer);
@@ -413,7 +445,7 @@ function mountTextEntry(root) {
   };
 
   entry.addEventListener("focus", () => {
-    sessionStorage.setItem("prototypeBackTarget2", "2_t1.html");
+    sessionStorage.setItem("prototypeBackTarget2", backSource);
     syncViewportOffset();
     window.setTimeout(() => {
       entry.scrollIntoView({ block: "center", behavior: "smooth" });
@@ -423,9 +455,9 @@ function mountTextEntry(root) {
   entry.addEventListener("input", grow);
 
   send.addEventListener("click", () => {
-    sessionStorage.setItem("prototypeBackTarget2", "2_t1.html");
+    sessionStorage.setItem("prototypeBackTarget2", backSource);
     window.setTimeout(() => {
-      window.location.href = "2_grkw_t.html";
+      window.location.href = routeTarget;
     }, 500);
   });
 
@@ -514,6 +546,9 @@ function mountPage() {
       break;
     case "grid-2":
       mountGridResults(screen, salmonRecipes, ["鮭", "20分以内"], true);
+      break;
+    case "grid-practice":
+      mountGridResults(screen, practiceRecipes, ["ひき肉", "15分以内"], true);
       break;
     case "nl-text":
       mountNlText(screen);
