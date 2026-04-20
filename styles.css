@@ -490,14 +490,15 @@ textarea {
   position: absolute;
   inset: 0;
   border-radius: 999px;
-  background: linear-gradient(180deg, #d55c30 0%, #c55228 100%);
+  background: #fadfca;
   box-shadow: inset 0 -2px 3px rgba(0, 0, 0, 0.08);
+  transition: background-color 0.22s ease;
 }
 
 .sound-toggle-thumb {
   position: absolute;
   top: 4%;
-  left: calc(100% - min(136px, 26.5vw) + 2%);
+  left: 2%;
   width: min(128px, 24.8vw);
   height: min(128px, 24.8vw);
   border-radius: 50%;
@@ -507,11 +508,11 @@ textarea {
 }
 
 .sound-toggle-input:checked + .sound-toggle-track {
-  background: linear-gradient(180deg, #d55c30 0%, #c55228 100%);
+  background: #d36b46;
 }
 
 .sound-toggle-input:checked ~ .sound-toggle-thumb {
-  transform: translateX(calc(-100% - min(28px, 5.6vw)));
+  transform: translateX(calc(100% + min(28px, 5.6vw)));
 }
 
 .home-screen {
