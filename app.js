@@ -613,7 +613,7 @@ function mountPage() {
       mountGridResults(screen, chickenRecipes, ["とり肉"]);
       break;
     case "grid-2":
-      mountGridResults(screen, salmonRecipes, ["鮭", "20分以内"], true);
+      mountGridResults(screen, salmonRecipes, ["鮭の切り身", "20分以内"], true);
       break;
     case "grid-practice":
       mountGridResults(screen, practiceRecipes, ["ひき肉", "15分以内"], true);
