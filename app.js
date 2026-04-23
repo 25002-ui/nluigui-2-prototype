@@ -35,25 +35,25 @@ const chickenRecipes = [
     image: "./material/1_toriniku_1.jpg",
     title: "照り焼きチキン",
     time: "15分",
-    desc: "甘辛く仕上げる料理で、ご飯に合いやすく鶏もも肉で作ると失敗しにくいです",
+    desc: "甘辛く仕上げる料理で、ご飯に合いやすく鶏もも肉で作ると失敗しにくいです。冷めても味がなじみやすいため、お弁当のおかずにも使いやすいです。",
   },
   {
     image: "./material/1_toriniku_2.jpg",
     title: "親子丼",
     time: "15分",
-    desc: "鶏肉と玉ねぎを甘辛く煮る料理で、短時間で作りやすくやさしい味です。",
+    desc: "短時間で作りやすいやさしい味で、忙しい日の食事に向いています。",
   },
   {
     image: "./material/1_toriniku_3.jpg",
     title: "鶏の唐揚げ",
-    time: "25分",
-    desc: "しょうゆとにんにくとしょうがで下味をつけて揚げる料理で、おかずやお弁当にも向いています",
+    time: "30分",
+    desc: "幅広い世代に大人気な定番料理で、レモンを添えると味に変化がつき、最後まで飽きずに食べれます。",
   },
   {
     image: "./material/1_toriniku_4.jpg",
     title: "鶏肉のトマト煮",
     time: "40分",
-    desc: "玉ねぎやきのこを入れると食べやすくなり、パンやご飯に合わせやすいです。",
+    desc: "鶏肉をトマトソースでやわらかく煮る料理で、ほどよい酸味とうまみで食べやすいです。チーズを加えるとコクが増し、夕食の主菜としても満足感を出しやすいです。",
   },
 ];
 
@@ -106,24 +106,88 @@ const practiceRecipes = [
   {
     image: "./material/r_hikiniku_4.jpg",
     title: "シチュービーフで作る\n煮込みハンバーグ",
-    time: "20分",
+    time: "40分",
     desc: "ビーフシチュールウを使って手軽にコクのある味に仕上がり、洋風の主菜にぴったりです。",
   },
 ];
 
 const nlSections = [
   { title: "ツナ缶を使った料理を４つご紹介します。" },
-  { bullet: "■ツナマヨ丼", body: "トッピングに刻みのりや卵黄をのせると、味全体がまとまりやすいです。" },
-  { bullet: "■ツナじゃが", body: "肉じゃがの肉の代わりにツナ缶を使う料理で、ツナのうまみでやさしい味になります。" },
-  { bullet: "■ツナと玉ねぎの和風パスタ", body: "にんにくを入れると風味が出て、トッピングに大葉やのりも合います。" },
-  { bullet: "■ツナサラダうどん", body: "めんつゆやごまだれで食べる料理で、暑い時や食欲がない時にもピッタリです。" },
+  { bullet: "◾️ツナマヨ丼", body: "トッピングに刻みのりや卵黄をのせると、まとまりやすいです。調理時間は5分です。" },
+  { bullet: "◾️ツナサラダうどん", body: "めんつゆやごまだれで食べる料理で、暑い時や食欲がない時にもピッタリです。調理時間は15分です。" },
+  { bullet: "◾️ツナじゃが", body: "肉じゃがのお肉の代わりにツナ缶を使う料理で、ツナのうまみでやさしい味になります。調理時間は20分です。" },
+  { bullet: "◾️ツナと玉ねぎの和風パスタ", body: "にんにくを入れると風味が出て、トッピングに大葉やのりも合います。調理時間は20分です。" },
   { title: "希望の調理時間や味付けの好みがあれば教えてくださいね。" },
 ];
+
+const LOG_STORAGE_KEY = "prototypeActionLogs";
+const LOG_SESSION_KEY = "prototypeLogSessionId";
+
+function getLogSessionId() {
+  const saved = sessionStorage.getItem(LOG_SESSION_KEY);
+  if (saved) {
+    return saved;
+  }
+
+  const generated = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  sessionStorage.setItem(LOG_SESSION_KEY, generated);
+  return generated;
+}
+
+function formatLogTimestamp(date = new Date()) {
+  const pad = (value) => String(value).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+}
+
+function getCurrentScreenName() {
+  const screen = document.querySelector("[data-screen]");
+  if (screen?.dataset.screen) {
+    return screen.dataset.screen;
+  }
+  return window.location.pathname.split("/").pop() || "index.html";
+}
+
+function storeLogFallback(entry) {
+  const saved = JSON.parse(localStorage.getItem(LOG_STORAGE_KEY) || "[]");
+  saved.push(entry);
+  localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(saved.slice(-1000)));
+}
+
+function logEvent(action, target = "", detail = "") {
+  const entry = {
+    timestamp: formatLogTimestamp(),
+    page: window.location.pathname.split("/").pop() || "index.html",
+    screen: getCurrentScreenName(),
+    action,
+    target,
+    detail,
+    sessionId: getLogSessionId(),
+    userAgent: navigator.userAgent,
+  };
+
+  storeLogFallback(entry);
+
+  const body = JSON.stringify(entry);
+  if (navigator.sendBeacon) {
+    const sent = navigator.sendBeacon("/api/log", new Blob([body], { type: "application/json" }));
+    if (sent) {
+      return;
+    }
+  }
+
+  fetch("/api/log", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body,
+    keepalive: true,
+  }).catch(() => {});
+}
 
 function bindBackButtons() {
   document.querySelectorAll("[data-back-target]").forEach((button) => {
     button.addEventListener("click", () => {
       const target = button.dataset.backTarget;
+      logEvent("click", "戻る", `to ${target || "index.html"}`);
       if (target === "dynamic-2-result") {
         window.location.href = sessionStorage.getItem("prototypeBackTarget2") || "index.html";
         return;
@@ -140,6 +204,7 @@ function resetSelections() {
 function bindResetLinks() {
   document.querySelectorAll("[data-reset-selections]").forEach((link) => {
     link.addEventListener("click", () => {
+      logEvent("click", link.textContent.trim(), "reset selections");
       resetSelections();
     });
   });
@@ -177,6 +242,7 @@ function mountSelectionScreen(root, nextPage) {
         }
         button.addEventListener("click", () => {
           button.classList.toggle("selected");
+          logEvent("click", item, button.classList.contains("selected") ? "selected" : "unselected");
           persistSelections(root);
         });
         grid.appendChild(button);
@@ -197,6 +263,7 @@ function mountSelectionScreen(root, nextPage) {
   content.appendChild(actions);
 
   actions.querySelector("[data-clear]").addEventListener("click", () => {
+    logEvent("click", "条件クリア", "clear selected chips");
     root.querySelectorAll(".chip-button.selected").forEach((button) => {
       button.classList.remove("selected");
     });
@@ -205,6 +272,7 @@ function mountSelectionScreen(root, nextPage) {
 
   actions.querySelector("[data-submit]").addEventListener("click", () => {
     persistSelections(root);
+    logEvent("click", "レシピを表示", `to ${nextPage}`);
     if (nextPage === "1_nl_v.html") {
       transitionToInlineNlVoice(root, {
         backTarget: `${window.location.pathname.split("/").pop() || "1_sel_nl_v.html"}`,
@@ -237,6 +305,7 @@ function mountGridResults(root, recipes, fallbackTags, forceFixedTags = false) {
   }
   const selections = JSON.parse(sessionStorage.getItem("prototypeSelections") || "[]");
   const tags = forceFixedTags ? fallbackTags : (selections.length > 0 ? selections.slice(0, 2) : fallbackTags);
+  logEvent("screen_shown", "検索結果", tags.join(" "));
 
   const tagWrap = document.createElement("div");
   tagWrap.className = "result-tags";
@@ -267,6 +336,7 @@ function mountNlText(root) {
   const content = root.querySelector(".content");
   const wrap = document.createElement("section");
   wrap.className = "nl-copy";
+  logEvent("screen_shown", "NL_T", "text result shown");
 
   nlSections.forEach((section) => {
     if (section.title) {
@@ -307,7 +377,14 @@ function mountNlVoice(root) {
   const delay = autoplayMode === "immediate" ? 0 : 500;
   const playAudio = () => {
     window.setTimeout(() => {
-      audio.play().catch(() => {});
+      audio
+        .play()
+        .then(() => {
+          logEvent("audio", "1_NL_V.mp3", "play");
+        })
+        .catch(() => {
+          logEvent("audio_error", "1_NL_V.mp3", "play blocked");
+        });
     }, delay);
   };
 
@@ -330,6 +407,7 @@ function renderNlVoiceContent(root, backTarget) {
   backButton.dataset.backTarget = backTarget;
   content.innerHTML = "";
 
+  logEvent("screen_shown", "NL_V", "voice result shown");
   mountNlVoice(root);
 }
 
@@ -382,10 +460,12 @@ function mountVoiceFlow(root) {
       isActive = true;
       button.classList.remove("idle");
       button.classList.add("active");
+      logEvent("click", "音声入力", "voice button active");
       return;
     }
 
     sessionStorage.setItem("prototypeBackTarget2", backSource);
+    logEvent("click", "音声入力", `to ${routeTarget}`);
     if (routeTarget === "1_nl_v.html") {
       transitionToInlineNlVoice(root, {
         backTarget: backSource,
@@ -449,6 +529,7 @@ function mountTextEntry(root) {
   };
 
   entry.addEventListener("focus", () => {
+    logEvent("focus", "テキストボックス", "keyboard shown");
     sessionStorage.setItem("prototypeBackTarget2", backSource);
     syncViewportOffset();
     window.setTimeout(() => {
@@ -460,6 +541,7 @@ function mountTextEntry(root) {
 
   send.addEventListener("click", () => {
     sessionStorage.setItem("prototypeBackTarget2", backSource);
+    logEvent("click", "▶︎", `to ${routeTarget}; text=${entry.value}`);
     window.setTimeout(() => {
       window.location.href = routeTarget;
     }, 500);
@@ -512,10 +594,16 @@ function mountSoundCheck(root) {
   const startPlayback = () => {
     clearRestartTimer();
     audio.currentTime = 0;
-    audio.play().catch(() => {
-      toggle.checked = false;
-      stopPlayback();
-    });
+    audio
+      .play()
+      .then(() => {
+        logEvent("toggle", "音声チェック", "on");
+      })
+      .catch(() => {
+        logEvent("audio_error", "sound check.mp3", "play blocked");
+        toggle.checked = false;
+        stopPlayback();
+      });
   };
 
   audio.addEventListener("ended", () => {
@@ -537,6 +625,7 @@ function mountSoundCheck(root) {
       return;
     }
 
+    logEvent("toggle", "音声チェック", "off");
     stopPlayback();
   });
 }
@@ -570,6 +659,7 @@ function mountBottomNav(root, active) {
 
   nav.querySelectorAll("[data-nav-target]").forEach((item) => {
     item.addEventListener("click", () => {
+      logEvent("click", item.textContent.trim(), `to ${item.dataset.navTarget}`);
       window.location.href = item.dataset.navTarget;
     });
   });
@@ -595,6 +685,7 @@ function mountPage() {
   bindBackButtons();
   bindResetLinks();
   renderShareUrl();
+  logEvent("page_view", window.location.pathname.split("/").pop() || "index.html", document.title);
 
   const screen = document.querySelector("[data-screen]");
   if (!screen) {
@@ -613,7 +704,7 @@ function mountPage() {
       mountGridResults(screen, chickenRecipes, ["とり肉"]);
       break;
     case "grid-2":
-      mountGridResults(screen, salmonRecipes, ["鮭の切り身", "20分以内"], true);
+      mountGridResults(screen, salmonRecipes, ["鮭", "20分以内"], true);
       break;
     case "grid-practice":
       mountGridResults(screen, practiceRecipes, ["ひき肉", "15分以内"], true);
