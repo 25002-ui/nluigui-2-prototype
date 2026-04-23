@@ -614,6 +614,104 @@ textarea {
   object-fit: contain;
 }
 
+.log-page {
+  min-height: 100dvh;
+  padding: 24px;
+  background: #f7f3ee;
+  color: var(--text);
+}
+
+.log-card {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 22px;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 16px 36px rgba(31, 31, 31, 0.1);
+}
+
+.log-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+
+.log-header h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+}
+
+.log-header p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.log-home-link,
+.log-actions button,
+.log-actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.log-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.log-status {
+  margin: 0 0 12px;
+  color: var(--muted);
+}
+
+.log-table-wrap {
+  max-height: calc(100dvh - 220px);
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.log-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  background: #fff;
+}
+
+.log-table th,
+.log-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.log-table td:nth-child(6) {
+  white-space: normal;
+  min-width: 240px;
+}
+
+.log-table th {
+  position: sticky;
+  top: 0;
+  background: #fbf5ef;
+  z-index: 1;
+}
+
 @media (min-width: 431px) {
   body {
     padding: 24px;
